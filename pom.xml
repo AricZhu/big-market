@@ -11,6 +11,7 @@
 	<groupId>com.platform</groupId>
 	<artifactId>big-market</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
 	<name>big-market</name>
 	<description>大营销系统平台</description>
 	<url/>
@@ -20,6 +21,14 @@
 	<developers>
 		<developer/>
 	</developers>
+	<modules>
+		<module>big-market-api</module>
+		<module>big-market-app</module>
+		<module>big-market-domain</module>
+		<module>big-market-infrastructure</module>
+		<module>big-market-trigger</module>
+		<module>big-market-types</module>
+	</modules>
 	<scm>
 		<connection/>
 		<developerConnection/>
