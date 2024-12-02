@@ -23,4 +23,8 @@
     <select id="queryStrategyAwardList" resultMap="dataMap">
         SELECT * FROM strategy_award
     </select>
+
+    <select id="queryStrategyAwardListById" resultMap="dataMap">
+        SELECT * FROM strategy_award where strategy_id = #{strategyId}
+    </select>
 </mapper>

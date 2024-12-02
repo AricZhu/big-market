@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -29,5 +30,15 @@ public class RedisService implements IRedisService {
     @Override
     public boolean deleteValue(String key) {
         return redisTemplate.delete(key);
+    }
+
+    @Override
+    public void setHashMap(String key, Map<?, ?> value) {
+        redisTemplate.opsForHash().putAll(key, value);
+    }
+
+    @Override
+    public <T> T getHashMap(String key) {
+        return (T) redisTemplate.opsForHash().entries(key);
     }
 }

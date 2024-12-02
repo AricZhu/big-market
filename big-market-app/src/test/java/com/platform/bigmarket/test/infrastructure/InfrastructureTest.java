@@ -1,4 +1,4 @@
-package com.platform.bigmarket.test;
+package com.platform.bigmarket.test.infrastructure;
 
 import com.alibaba.fastjson.JSON;
 import com.platform.bigmarket.config.RedisProperties;
