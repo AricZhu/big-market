@@ -20,4 +20,8 @@
     <select id="queryStrategyRuleList" resultMap="dataMap">
         SELECT * FROM strategy_rule
     </select>
+
+    <select id="queryStrategyRule" resultMap="dataMap">
+        SELECT * FROM strategy_rule where strategy_id = #{strategyId} and rule_model = #{ruleModel} limit 1
+    </select>
 </mapper>

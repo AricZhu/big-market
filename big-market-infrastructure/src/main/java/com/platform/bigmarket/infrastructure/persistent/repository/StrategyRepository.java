@@ -1,9 +1,12 @@
 package com.platform.bigmarket.infrastructure.persistent.repository;
 
 import com.platform.bigmarket.domain.strategy.model.entity.StrategyAwardEntity;
+import com.platform.bigmarket.domain.strategy.model.entity.StrategyRuleEntity;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
 import com.platform.bigmarket.infrastructure.persistent.dao.IStrategyAwardDao;
+import com.platform.bigmarket.infrastructure.persistent.dao.IStrategyRuleDao;
 import com.platform.bigmarket.infrastructure.persistent.po.StrategyAward;
+import com.platform.bigmarket.infrastructure.persistent.po.StrategyRule;
 import com.platform.bigmarket.infrastructure.persistent.redis.IRedisService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +19,13 @@ import java.util.Map;
 
 @Repository
 public class StrategyRepository implements IStrategyRepository {
-    private final String rateRangePrefix = "range_";
-    private final String rateTablePrefix = "rate_table_";
-
     private static final Map<String, Object> CacheData = new HashMap<>();
 
     @Autowired
     private IStrategyAwardDao strategyAwardDao;
+
+    @Autowired
+    private IStrategyRuleDao strategyRuleDao;
 
     @Autowired
     private IRedisService redisService;
@@ -43,9 +46,7 @@ public class StrategyRepository implements IStrategyRepository {
     }
 
     @Override
-    public Map<String, Integer> getStrategyAwardRateTable(Long strategyId) {
-        String key = rateTablePrefix + strategyId.toString();
-
+    public Map<String, Integer> getStrategyAwardRateTable(String key) {
         if (CacheData.containsKey(key)) {
             return (Map<String, Integer>) CacheData.get(key);
         }
@@ -57,14 +58,12 @@ public class StrategyRepository implements IStrategyRepository {
     }
 
     @Override
-    public void setStrategyAwardRateTable(Long strategyId, Map<String, Integer> rateTable) {
-        redisService.setValue(rateTablePrefix + strategyId.toString(), rateTable);
+    public void setStrategyAwardRateTable(String key, Map<String, Integer> rateTable) {
+        redisService.setValue(key, rateTable);
     }
 
     @Override
-    public Integer getStragetyAwardRange(Long strategyId) {
-        String key = rateRangePrefix + strategyId.toString();
-
+    public Integer getStragetyAwardRange(String key) {
         if (CacheData.containsKey(key)) {
             return (Integer) CacheData.get(key);
         }
@@ -76,7 +75,16 @@ public class StrategyRepository implements IStrategyRepository {
     }
 
     @Override
-    public void setStragetyAwardRange(Long strategyId, Integer range) {
-        redisService.setValue(rateRangePrefix + strategyId.toString(), range);
+    public void setStragetyAwardRange(String key, Integer range) {
+        redisService.setValue(key, range);
+    }
+
+    @Override
+    public StrategyRuleEntity queryStrategyRuleEntity(Long strategyId, String ruleModel) {
+        StrategyRule strategyRule = strategyRuleDao.queryStrategyRule(strategyId, ruleModel);
+        StrategyRuleEntity strategyRuleEntity = new StrategyRuleEntity();
+        BeanUtils.copyProperties(strategyRule, strategyRuleEntity);
+
+        return strategyRuleEntity;
     }
 }

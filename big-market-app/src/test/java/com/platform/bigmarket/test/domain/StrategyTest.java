@@ -1,6 +1,7 @@
 package com.platform.bigmarket.test.domain;
 
-import com.platform.bigmarket.domain.strategy.service.IStrategyService;
+import com.platform.bigmarket.domain.strategy.service.IStrategyAssemble;
+import com.platform.bigmarket.domain.strategy.service.IStrategyLottery;
 import com.platform.bigmarket.infrastructure.persistent.redis.IRedisService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -19,21 +20,31 @@ public class StrategyTest {
     private static final Long strategyId = 100001L;
 
     @Autowired
-    private IStrategyService strategyService;
+    private IRedisService redisService;
 
     @Autowired
-    private IRedisService redisService;
+    private IStrategyAssemble strategyAssemble;
+
+    @Autowired
+    private IStrategyLottery strategyLottery;
+
 
     @Test
     public void test_assembleStrategy() {
-        boolean result = strategyService.assembleStrategy(strategyId);
+        boolean result = strategyAssemble.assembleStrategy(strategyId);
         log.info("策略装配: {}", result);
     }
 
     @Test
-    public void test_lotteryByStrategyId() {
-        Integer awardId = strategyService.lotteryByStrategyId(strategyId);
+    public void test_doLottery() {
+        Integer awardId = strategyLottery.doLottery(strategyId);
         log.info("进行抽奖: {}", awardId);
+    }
+
+    @Test
+    public void test_doLotteryWeight() {
+        Integer awardId = strategyLottery.doLotteryByWeight(strategyId, 4000);
+        log.info("进行权重抽奖: {}", awardId);
     }
 
     /**
@@ -44,7 +55,7 @@ public class StrategyTest {
         int count = 1000000;
         Map<Integer, Integer> awardIdCountMap = new HashMap<>();
         for (int i = 0; i < count; i++) {
-            Integer awardId = strategyService.lotteryByStrategyId(strategyId);
+            Integer awardId = strategyLottery.doLottery(strategyId);
             Integer idCount = awardIdCountMap.get(awardId);
             if (idCount == null) {
                 idCount = 1;

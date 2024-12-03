@@ -1,6 +1,7 @@
 package com.platform.bigmarket.domain.strategy.service;
 
 import com.platform.bigmarket.domain.strategy.model.entity.StrategyAwardEntity;
+import com.platform.bigmarket.domain.strategy.model.entity.StrategyRuleEntity;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,14 +11,40 @@ import java.math.RoundingMode;
 import java.util.*;
 
 @Service
-public class StrategyService implements IStrategyService {
+public class StrategyService implements IStrategyAssemble, IStrategyLottery {
+    private static final String rateRangePrefix = "range_";
+    private static final String rateTablePrefix = "rate_table_";
 
     @Autowired
     private IStrategyRepository strategyRepository;
 
     @Override
     public boolean assembleStrategy(Long strategyId) {
+        // 全概率装配
         List<StrategyAwardEntity> strategyAwardList = strategyRepository.queryStrategyAwardEntityList(strategyId);
+        assembleStrategy(strategyId.toString(), strategyAwardList);
+
+        // 权重装配
+        StrategyRuleEntity strategyRuleEntity = strategyRepository.queryStrategyRuleEntity(strategyId, "rule_weight");
+        if (strategyRuleEntity == null) {
+            throw new RuntimeException("当前策略没有权重: " + strategyId);
+        }
+
+        Map<Integer, String> ruleWeightMap = strategyRuleEntity.getRuleWeightMap();
+        ruleWeightMap.forEach((key, value) -> {
+            List<StrategyAwardEntity> list = strategyAwardList.stream()
+                    .filter(item -> value.contains(item.getAwardId().toString()))
+                    .toList();
+
+            // 根据不同积分进行装配奖池
+            assembleStrategy(strategyId + "_" + key, list);
+        });
+
+        return true;
+    }
+
+    @Override
+    public void assembleStrategy(String key, List<StrategyAwardEntity> strategyAwardList) {
         BigDecimal totalRate = strategyAwardList.stream()
                 .map(StrategyAwardEntity::getAwardRate)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -27,14 +54,17 @@ public class StrategyService implements IStrategyService {
                 .min(BigDecimal::compareTo)
                 .orElse(BigDecimal.ZERO);
 
-        BigDecimal rateRange = totalRate.divide(minRate, 0, RoundingMode.CEILING);
+        BigDecimal scale = new BigDecimal(1).divide(minRate, 0, RoundingMode.CEILING);
+
+
+        BigDecimal rateRange = scale.multiply(totalRate);
 
         Integer rateRangeInt = rateRange.intValue();
-        strategyRepository.setStragetyAwardRange(strategyId, rateRangeInt);
+        strategyRepository.setStragetyAwardRange(rateRangePrefix + key, rateRangeInt);
 
         ArrayList<Integer> rateTableList = new ArrayList<>(rateRangeInt);
         for (StrategyAwardEntity strategyAwardEntity : strategyAwardList) {
-            int awardCounts = strategyAwardEntity.getAwardRate().multiply(rateRange).intValue();
+            int awardCounts = strategyAwardEntity.getAwardRate().multiply(scale).intValue();
             Integer awardId = strategyAwardEntity.getAwardId();
             for(int i = 0; i < awardCounts; i++) {
                 rateTableList.add(awardId);
@@ -48,14 +78,23 @@ public class StrategyService implements IStrategyService {
             rateTable.put(String.valueOf(i), rateTableList.get(i));
         }
 
-        strategyRepository.setStrategyAwardRateTable(strategyId, rateTable);
-        return true;
+        strategyRepository.setStrategyAwardRateTable(rateTablePrefix + key, rateTable);
     }
 
     @Override
-    public Integer lotteryByStrategyId(Long strategyId) {
-        int stragetyAwardRange = strategyRepository.getStragetyAwardRange(strategyId);
-        Map<String, Integer> stragetyAwardRateTable = strategyRepository.getStrategyAwardRateTable(strategyId);
+    public Integer doLottery(Long strategyId) {
+        int stragetyAwardRange = strategyRepository.getStragetyAwardRange(rateRangePrefix + strategyId);
+        Map<String, Integer> stragetyAwardRateTable = strategyRepository.getStrategyAwardRateTable(rateTablePrefix + strategyId);
+
+        Random random = new Random();
+        int randomIndex = random.nextInt(stragetyAwardRange);
+        return stragetyAwardRateTable.get(String.valueOf(randomIndex));
+    }
+
+    @Override
+    public Integer doLotteryByWeight(Long strategyId, Integer weight) {
+        int stragetyAwardRange = strategyRepository.getStragetyAwardRange(rateRangePrefix + strategyId + "_" + weight);
+        Map<String, Integer> stragetyAwardRateTable = strategyRepository.getStrategyAwardRateTable(rateTablePrefix + strategyId + "_" + weight);
 
         Random random = new Random();
         int randomIndex = random.nextInt(stragetyAwardRange);
