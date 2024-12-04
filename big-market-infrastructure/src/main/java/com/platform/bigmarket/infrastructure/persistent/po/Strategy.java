@@ -13,7 +13,7 @@ public class Strategy {
     /** 抽奖策略描述 */
     private String strategyDesc;
     /** 抽奖策略模型 */
-    private String rule_models;
+    private String ruleModels;
     /** 创建时间 */
     private Date createTime;
     /** 更新时间 */

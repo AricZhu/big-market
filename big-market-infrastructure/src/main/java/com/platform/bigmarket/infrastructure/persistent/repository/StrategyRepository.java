@@ -1,13 +1,18 @@
 package com.platform.bigmarket.infrastructure.persistent.repository;
 
 import com.platform.bigmarket.domain.strategy.model.entity.StrategyAwardEntity;
+import com.platform.bigmarket.domain.strategy.model.entity.StrategyEntity;
 import com.platform.bigmarket.domain.strategy.model.entity.StrategyRuleEntity;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
 import com.platform.bigmarket.infrastructure.persistent.dao.IStrategyAwardDao;
+import com.platform.bigmarket.infrastructure.persistent.dao.IStrategyDao;
 import com.platform.bigmarket.infrastructure.persistent.dao.IStrategyRuleDao;
+import com.platform.bigmarket.infrastructure.persistent.po.Strategy;
 import com.platform.bigmarket.infrastructure.persistent.po.StrategyAward;
 import com.platform.bigmarket.infrastructure.persistent.po.StrategyRule;
 import com.platform.bigmarket.infrastructure.persistent.redis.IRedisService;
+import com.platform.bigmarket.types.common.ExceptionCode;
+import com.platform.bigmarket.types.exception.BizException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -30,6 +35,9 @@ public class StrategyRepository implements IStrategyRepository {
     @Autowired
     private IRedisService redisService;
 
+    @Autowired
+    private IStrategyDao strategyDao;
+
     @Override
     public List<StrategyAwardEntity> queryStrategyAwardEntityList(Long strategyId) {
         List<StrategyAward> strategyAwardList = strategyAwardDao.queryStrategyAwardListById(strategyId);
@@ -43,6 +51,18 @@ public class StrategyRepository implements IStrategyRepository {
         }
 
         return strategyAwardEntityList;
+    }
+
+    @Override
+    public StrategyEntity queryStrategyEntity(Long strategyId) {
+        Strategy strategy = strategyDao.queryStrategy(strategyId);
+        if (null == strategy) {
+            throw new BizException(ExceptionCode.ILLEGAL_PARAMS.getCode(), "策略 id=" + strategyId + " 查询为空");
+        }
+        StrategyEntity strategyEntity = new StrategyEntity();
+        BeanUtils.copyProperties(strategy, strategyEntity);
+
+        return strategyEntity;
     }
 
     @Override

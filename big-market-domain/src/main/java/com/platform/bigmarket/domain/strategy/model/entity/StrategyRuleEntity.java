@@ -3,7 +3,9 @@ package com.platform.bigmarket.domain.strategy.model.entity;
 import lombok.Data;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Data
 public class StrategyRuleEntity {
@@ -45,5 +47,18 @@ public class StrategyRuleEntity {
         }
 
         return ruleWeightMap;
+    }
+
+    public Integer calcWeight(Integer userScore) {
+        Map<Integer, String> ruleWeightMap = getRuleWeightMap();
+        // 将所有权重按从大到小进行排序
+        List<Integer> list = ruleWeightMap.keySet().stream().sorted((a, b) -> b - a).toList();
+        for (Integer item : list) {
+            if (userScore >= item) {
+                return item;
+            }
+        }
+
+        return -1;
     }
 }

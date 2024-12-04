@@ -9,4 +9,11 @@
     <artifactId>big-market-types</artifactId>
     <name>Archetype - big-market-types</name>
     <url>http://maven.apache.org</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+    </dependencies>
 </project>

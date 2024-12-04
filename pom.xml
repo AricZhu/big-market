@@ -104,6 +104,12 @@
 				<version>6.2.4.RELEASE</version>
 			</dependency>
 
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>3.9</version>
+			</dependency>
+
 			<!-- 模块 -->
 			<dependency>
 				<groupId>com.platform</groupId>
@@ -114,6 +120,12 @@
 			<dependency>
 				<groupId>com.platform</groupId>
 				<artifactId>big-market-domain</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.platform</groupId>
+				<artifactId>big-market-types</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 

@@ -1,6 +1,7 @@
 package com.platform.bigmarket.domain.strategy.repository;
 
 import com.platform.bigmarket.domain.strategy.model.entity.StrategyAwardEntity;
+import com.platform.bigmarket.domain.strategy.model.entity.StrategyEntity;
 import com.platform.bigmarket.domain.strategy.model.entity.StrategyRuleEntity;
 
 import java.util.List;
@@ -8,6 +9,8 @@ import java.util.Map;
 
 public interface IStrategyRepository {
     List<StrategyAwardEntity> queryStrategyAwardEntityList(Long strategyId);
+
+    StrategyEntity queryStrategyEntity(Long strategyId);
 
     Map<String, Integer> getStrategyAwardRateTable(String key);
 
