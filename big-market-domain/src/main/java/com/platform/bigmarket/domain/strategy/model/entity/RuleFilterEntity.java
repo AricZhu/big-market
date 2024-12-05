@@ -11,5 +11,6 @@ import lombok.Getter;
 public class RuleFilterEntity {
     private String userId;
     private Long strategyId;
+    private Integer awardId;
     private StrategyEntity strategyEntity;
 }

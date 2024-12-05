@@ -1,4 +1,4 @@
-package com.platform.bigmarket.domain.strategy.service;
+package com.platform.bigmarket.domain.strategy.service.rule;
 
 import com.platform.bigmarket.domain.strategy.model.entity.RaffleActionEntity;
 import com.platform.bigmarket.domain.strategy.model.entity.RuleFilterEntity;

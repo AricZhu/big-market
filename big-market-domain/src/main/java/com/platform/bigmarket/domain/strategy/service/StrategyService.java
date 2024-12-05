@@ -25,7 +25,7 @@ public class StrategyService implements IStrategyAssemble, IStrategyLottery {
         assembleStrategy(strategyId.toString(), strategyAwardList);
 
         // 权重装配
-        StrategyRuleEntity strategyRuleEntity = strategyRepository.queryStrategyRuleEntity(strategyId, "rule_weight");
+        StrategyRuleEntity strategyRuleEntity = strategyRepository.queryStrategyRuleEntity(strategyId, "rule_weight", null);
         if (strategyRuleEntity == null) {
             throw new RuntimeException("当前策略没有权重: " + strategyId);
         }

@@ -20,5 +20,5 @@ public interface IStrategyRepository {
 
     void setStragetyAwardRange(String key, Integer range);
 
-    StrategyRuleEntity queryStrategyRuleEntity(Long strategyId, String ruleModel);
+    StrategyRuleEntity queryStrategyRuleEntity(Long strategyId, String ruleModel, Integer awardId);
 }

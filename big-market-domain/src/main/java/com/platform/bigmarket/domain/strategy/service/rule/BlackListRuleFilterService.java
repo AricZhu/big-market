@@ -1,8 +1,8 @@
-package com.platform.bigmarket.domain.strategy.service;
+package com.platform.bigmarket.domain.strategy.service.rule;
 
 import com.platform.bigmarket.domain.strategy.model.common.RuleAction;
 import com.platform.bigmarket.domain.strategy.model.common.RuleModel;
-import com.platform.bigmarket.domain.strategy.model.entity.BeforeRaffleEntity;
+import com.platform.bigmarket.domain.strategy.model.entity.BeforeRaffleActionEntity;
 import com.platform.bigmarket.domain.strategy.model.entity.RuleFilterEntity;
 import com.platform.bigmarket.domain.strategy.model.entity.RuleRaffleEntity;
 import com.platform.bigmarket.domain.strategy.model.entity.StrategyRuleEntity;
@@ -16,39 +16,39 @@ import java.util.Arrays;
  * 黑名单过滤
  */
 @Service
-public class BlackListRuleFilterService implements IRuleFilterService<BeforeRaffleEntity> {
+public class BlackListRuleFilterService implements IRuleFilterService<BeforeRaffleActionEntity> {
     @Autowired
     private IStrategyRepository strategyRepository;
 
     @Override
-    public RuleRaffleEntity<BeforeRaffleEntity> filter(RuleFilterEntity ruleFilterEntity) {
+    public RuleRaffleEntity<BeforeRaffleActionEntity> filter(RuleFilterEntity ruleFilterEntity) {
         String[] ruleModels = ruleFilterEntity.getStrategyEntity().getRuleModelArray();
         boolean hasBlackListModel = Arrays.stream(ruleModels).anyMatch(item -> RuleModel.BLACK_LIST.getCode().equals(item));
         // 没有黑名单规则，直接放行
         if (!hasBlackListModel) {
-            return RuleRaffleEntity.<BeforeRaffleEntity>builder()
+            return RuleRaffleEntity.<BeforeRaffleActionEntity>builder()
                     .ruleActionCode(RuleAction.ALLOW.getCode())
                     .ruleModel(RuleModel.BLACK_LIST.getCode())
                     .build();
         }
 
         // 判断当前用户是否是黑名单用户
-        StrategyRuleEntity strategyRuleEntity = strategyRepository.queryStrategyRuleEntity(ruleFilterEntity.getStrategyId(), RuleModel.BLACK_LIST.getCode());
+        StrategyRuleEntity strategyRuleEntity = strategyRepository.queryStrategyRuleEntity(ruleFilterEntity.getStrategyId(), RuleModel.BLACK_LIST.getCode(), null);
         String ruleValue = strategyRuleEntity.getRuleValue();
         String[] ruleValueArr = ruleValue.split(":");
         String[] blackUserList = ruleValueArr[1].split(",");
         if (Arrays.stream(blackUserList).anyMatch(item -> item.equals(ruleFilterEntity.getUserId()))) {
-            return RuleRaffleEntity.<BeforeRaffleEntity>builder()
+            return RuleRaffleEntity.<BeforeRaffleActionEntity>builder()
                     .ruleActionCode(RuleAction.TAKE_OVER.getCode())
                     .ruleModel(RuleModel.BLACK_LIST.getCode())
-                    .data(BeforeRaffleEntity.builder()
+                    .data(BeforeRaffleActionEntity.builder()
                             .strategyId(ruleFilterEntity.getStrategyId())
                             .awardId(Integer.valueOf(ruleValueArr[0]))
                             .build())
                     .build();
         }
 
-        return RuleRaffleEntity.<BeforeRaffleEntity>builder()
+        return RuleRaffleEntity.<BeforeRaffleActionEntity>builder()
                 .ruleActionCode(RuleAction.ALLOW.getCode())
                 .ruleModel(RuleModel.BLACK_LIST.getCode())
                 .build();

@@ -100,8 +100,11 @@ public class StrategyRepository implements IStrategyRepository {
     }
 
     @Override
-    public StrategyRuleEntity queryStrategyRuleEntity(Long strategyId, String ruleModel) {
-        StrategyRule strategyRule = strategyRuleDao.queryStrategyRule(strategyId, ruleModel);
+    public StrategyRuleEntity queryStrategyRuleEntity(Long strategyId, String ruleModel, Integer awardId) {
+        StrategyRule strategyRule = strategyRuleDao.queryStrategyRule(strategyId, ruleModel, awardId);
+        if (null == strategyRule) {
+            return null;
+        }
         StrategyRuleEntity strategyRuleEntity = new StrategyRuleEntity();
         BeanUtils.copyProperties(strategyRule, strategyRuleEntity);
 

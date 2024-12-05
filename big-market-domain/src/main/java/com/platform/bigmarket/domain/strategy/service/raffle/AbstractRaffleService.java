@@ -1,10 +1,11 @@
-package com.platform.bigmarket.domain.strategy.service;
+package com.platform.bigmarket.domain.strategy.service.raffle;
 
 import com.alibaba.fastjson.JSON;
 import com.platform.bigmarket.domain.strategy.model.common.RuleAction;
 import com.platform.bigmarket.domain.strategy.model.common.RuleModel;
 import com.platform.bigmarket.domain.strategy.model.entity.*;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
+import com.platform.bigmarket.domain.strategy.service.IStrategyLottery;
 import com.platform.bigmarket.types.common.ExceptionCode;
 import com.platform.bigmarket.types.exception.BizException;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +33,8 @@ public abstract class AbstractRaffleService implements IRaffleService {
         // 1. 查询抽奖规则
         StrategyEntity strategyEntity = strategyRepository.queryStrategyEntity(raffleParams.getStrategyId());
 
-        // 2. 进行规则过滤
-        RuleRaffleEntity<BeforeRaffleEntity> ruleRaffleEntity = this.doBeforeRaffleRuleFilter(
+        // 2. 抽奖前-规则过滤
+        RuleRaffleEntity<BeforeRaffleActionEntity> ruleRaffleEntity = this.doBeforeRaffleRuleFilter(
                 RuleFilterEntity.builder()
                         .userId(raffleParams.getUserId())
                         .strategyId(raffleParams.getStrategyId())
@@ -63,10 +64,28 @@ public abstract class AbstractRaffleService implements IRaffleService {
         // 正常抽奖
         Integer awardId = strategyLottery.doLottery(raffleParams.getStrategyId());
 
+        // TODO 这里先写死 107，用来测试解锁抽奖
+        awardId = 107;
+
+        // 抽奖中-规则过滤
+        RuleRaffleEntity<CenterRaffleActionEntity> centerRuleRaffleEntity = this.doCenterRaffleRuleFilter(RuleFilterEntity.builder()
+                .userId(raffleParams.getUserId())
+                .strategyId(raffleParams.getStrategyId())
+                .awardId(awardId)
+                .strategyEntity(strategyEntity)
+                .build());
+        if (RuleAction.TAKE_OVER.getCode().equals(centerRuleRaffleEntity.getRuleActionCode())) {
+            return RaffleAwardEntity.builder()
+                    .awardId(101)
+                    .awardTitle("未满足抽奖次数，派发兜底奖品")
+                    .build();
+        }
+
         return RaffleAwardEntity.builder()
                 .awardId(awardId)
                 .build();
     }
 
-    protected abstract RuleRaffleEntity<BeforeRaffleEntity> doBeforeRaffleRuleFilter(RuleFilterEntity ruleFilterEntity);
+    protected abstract RuleRaffleEntity<BeforeRaffleActionEntity> doBeforeRaffleRuleFilter(RuleFilterEntity ruleFilterEntity);
+    protected abstract RuleRaffleEntity<CenterRaffleActionEntity> doCenterRaffleRuleFilter(RuleFilterEntity ruleFilterEntity);
 }

@@ -1,4 +1,4 @@
-package com.platform.bigmarket.domain.strategy.service;
+package com.platform.bigmarket.domain.strategy.service.raffle;
 
 import com.platform.bigmarket.domain.strategy.model.entity.RaffleAwardEntity;
 import com.platform.bigmarket.domain.strategy.model.entity.RaffleParamsEntity;
