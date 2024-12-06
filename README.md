@@ -62,3 +62,13 @@ return mapTable[random];
 上一章实现了抽奖前的过滤，本章在上一章的基础上添加抽奖中过滤。当用户抽奖奖品后，查询下当前奖品是否有解锁x次的规则，如果有，则判断是否满足，如果不满足则返回兜底奖品
 
 ![img.png](docs/images/raffle-center.png)
+
+## 责任链方式
+在前置过滤的实现中，我们现在是手动处理黑名单和权重过滤的，但这种方式并不利于代码维护，所以这一章我们使用责任链的方式重构前置过滤，如下：
+
+![img.png](docs/images/raffle-chain.png)
+
+**注意**: 因为每个责任链内部都包含指向下一个链的节点，因此是一个有状态节点，所以这里需要修改其创建模式，改为原型模式：
+```
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+```

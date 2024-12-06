@@ -3,6 +3,7 @@ package com.platform.bigmarket.test.domain;
 import com.alibaba.fastjson.JSON;
 import com.platform.bigmarket.domain.strategy.model.entity.RaffleAwardEntity;
 import com.platform.bigmarket.domain.strategy.model.entity.RaffleParamsEntity;
+import com.platform.bigmarket.domain.strategy.service.chain.RuleWeightRuleFilterChain;
 import com.platform.bigmarket.domain.strategy.service.raffle.IRaffleService;
 import com.platform.bigmarket.domain.strategy.service.rule.LockRuleFilterService;
 import com.platform.bigmarket.domain.strategy.service.rule.WeightRuleFilterService;
@@ -28,10 +29,14 @@ public class RaffleServiceTest {
     @Autowired
     private WeightRuleFilterService weightRuleFilterService;
 
+    @Autowired
+    private RuleWeightRuleFilterChain ruleWeightRuleFilterChain;
+
     @Before
     public void setUp() {
         ReflectionTestUtils.setField(lockRuleFilterService, "userRaffleCount", 0);
         ReflectionTestUtils.setField(weightRuleFilterService, "USER_SCORE", 0);
+        ReflectionTestUtils.setField(ruleWeightRuleFilterChain, "USER_SCORE", 0);
     }
 
     @Test

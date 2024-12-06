@@ -6,6 +6,8 @@ import com.platform.bigmarket.domain.strategy.model.common.RuleModel;
 import com.platform.bigmarket.domain.strategy.model.entity.*;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
 import com.platform.bigmarket.domain.strategy.service.IStrategyLottery;
+import com.platform.bigmarket.domain.strategy.service.chain.IRuleFilterChain;
+import com.platform.bigmarket.domain.strategy.service.chain.RuleFilterChainFactory;
 import com.platform.bigmarket.types.common.ExceptionCode;
 import com.platform.bigmarket.types.exception.BizException;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,9 @@ public abstract class AbstractRaffleService implements IRaffleService {
     @Autowired
     private IStrategyLottery strategyLottery;
 
+    @Autowired
+    private RuleFilterChainFactory ruleFilterChainFactory;
+
 
     @Override
     public RaffleAwardEntity performRaffle(RaffleParamsEntity raffleParams) {
@@ -33,45 +38,20 @@ public abstract class AbstractRaffleService implements IRaffleService {
         // 1. 查询抽奖规则
         StrategyEntity strategyEntity = strategyRepository.queryStrategyEntity(raffleParams.getStrategyId());
 
-        // 2. 抽奖前-规则过滤
-        RuleRaffleEntity<BeforeRaffleActionEntity> ruleRaffleEntity = this.doBeforeRaffleRuleFilter(
-                RuleFilterEntity.builder()
-                        .userId(raffleParams.getUserId())
-                        .strategyId(raffleParams.getStrategyId())
-                        .strategyEntity(strategyEntity)
-                .build());
+        RuleFilterEntity ruleFilterEntity = RuleFilterEntity.builder()
+                .userId(raffleParams.getUserId())
+                .strategyId(raffleParams.getStrategyId())
+                .strategyEntity(strategyEntity)
+                .build();
 
-        // 3. 接管抽奖
-        if (RuleAction.TAKE_OVER.getCode().equals(ruleRaffleEntity.getRuleActionCode())) {
-            // 黑名单抽奖
-            if (RuleModel.BLACK_LIST.getCode().equals(ruleRaffleEntity.getRuleModel())) {
-                log.info("执行黑名单抽奖：{}", JSON.toJSONString(ruleRaffleEntity));
-                return RaffleAwardEntity.builder()
-                        .awardId(ruleRaffleEntity.getData().getAwardId())
-                        .build();
-            }
-
-            // 权重抽奖
-            if (RuleModel.WEIGHT.getCode().equals(ruleRaffleEntity.getRuleModel())) {
-                log.info("执行权重抽奖：{}", JSON.toJSONString(ruleRaffleEntity));
-                Integer awardId = strategyLottery.doLotteryByWeight(ruleRaffleEntity.getData().getStrategyId(), ruleRaffleEntity.getData().getWeight());
-                return RaffleAwardEntity.builder()
-                        .awardId(awardId)
-                        .build();
-            }
-        }
-
-        // 正常抽奖
-        Integer awardId = strategyLottery.doLottery(raffleParams.getStrategyId());
-
-        // TODO 这里先写死 107，用来测试解锁抽奖
-        awardId = 107;
+        IRuleFilterChain iRuleFilterChain = ruleFilterChainFactory.openRuleFilterChain(raffleParams.getStrategyId());
+        RaffleAwardEntity raffleAwardEntity = iRuleFilterChain.filter(ruleFilterEntity);
 
         // 抽奖中-规则过滤
         RuleRaffleEntity<CenterRaffleActionEntity> centerRuleRaffleEntity = this.doCenterRaffleRuleFilter(RuleFilterEntity.builder()
                 .userId(raffleParams.getUserId())
                 .strategyId(raffleParams.getStrategyId())
-                .awardId(awardId)
+                .awardId(raffleAwardEntity.getAwardId())
                 .strategyEntity(strategyEntity)
                 .build());
         if (RuleAction.TAKE_OVER.getCode().equals(centerRuleRaffleEntity.getRuleActionCode())) {
@@ -82,7 +62,7 @@ public abstract class AbstractRaffleService implements IRaffleService {
         }
 
         return RaffleAwardEntity.builder()
-                .awardId(awardId)
+                .awardId(raffleAwardEntity.getAwardId())
                 .build();
     }
 
