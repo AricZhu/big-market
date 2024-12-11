@@ -11,11 +11,11 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RuleTree {
-    private Integer treeId;
+public class RuleTreeDTO {
+    private String treeId;
     private String treeName;
     private String treeDesc;
     private String rootNode;
 
-    private Map<String, RuleTreeNode> treeNodeMap;
+    private Map<String, RuleTreeNodeDTO> treeNodeMap;
 }

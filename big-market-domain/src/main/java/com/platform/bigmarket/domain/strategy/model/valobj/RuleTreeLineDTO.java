@@ -11,14 +11,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class RuleTreeLine {
-    private Integer treeId;
+public class RuleTreeLineDTO {
+    private String treeId;
     private String nodeFrom;
     private String nodeTo;
 
     /** 运算类型: 等于、大于、小于、大于等于、小于等于、枚举 */
-    private NodeLineExpressionType lineExpressionType;
+    private String lineExpressionType;
 
     /** 运算值 */
-    private RuleAction lineExpressionValue;
+    private String lineExpressionValue;
 }

@@ -5,6 +5,7 @@ import com.platform.bigmarket.domain.strategy.model.common.RuleModel;
 import com.platform.bigmarket.domain.strategy.model.entity.*;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
 import com.platform.bigmarket.domain.strategy.service.IStrategyLottery;
+import com.platform.bigmarket.domain.strategy.service.chain.factory.RuleFilterChainFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -26,7 +27,7 @@ public class RuleWeightRuleFilterChain extends AbstractRuleFilterChain {
     private IStrategyLottery strategyLottery;
 
     @Override
-    public RaffleAwardEntity filter(RuleFilterEntity ruleFilterEntity) {
+    public RuleFilterChainFactory.RuleFilterChainAwardEntity filter(RuleFilterEntity ruleFilterEntity) {
         log.info("开始权重责任链过滤: {}", JSON.toJSONString(ruleFilterEntity));
 
         Long strategyId = ruleFilterEntity.getStrategyId();
@@ -42,7 +43,9 @@ public class RuleWeightRuleFilterChain extends AbstractRuleFilterChain {
 
         log.info("权重责任链命中，开始执行权重抽奖: {}", weight);
         Integer awardId = strategyLottery.doLotteryByWeight(strategyId, weight);
-        return RaffleAwardEntity.builder()
+
+        return RuleFilterChainFactory.RuleFilterChainAwardEntity.builder()
+                .ruleModel(RuleModel.WEIGHT)
                 .awardId(awardId)
                 .build();
     }

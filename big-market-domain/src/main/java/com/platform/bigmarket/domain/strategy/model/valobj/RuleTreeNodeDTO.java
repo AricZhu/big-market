@@ -11,10 +11,10 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RuleTreeNode {
-    private Integer treeId;
+public class RuleTreeNodeDTO {
+    private String treeId;
     private String ruleKey;
     private String ruleValue;
     private String ruleDesc;
-    private List<RuleTreeLine> ruleTreeLineList;
+    private List<RuleTreeLineDTO> ruleTreeLineDTOList;
 }

@@ -4,6 +4,7 @@ import com.platform.bigmarket.domain.strategy.model.common.RuleModel;
 import com.platform.bigmarket.domain.strategy.model.entity.RaffleAwardEntity;
 import com.platform.bigmarket.domain.strategy.model.entity.RuleFilterEntity;
 import com.platform.bigmarket.domain.strategy.service.IStrategyLottery;
+import com.platform.bigmarket.domain.strategy.service.chain.factory.RuleFilterChainFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -18,11 +19,12 @@ public class DefaultRuleFilterChain extends AbstractRuleFilterChain {
     private IStrategyLottery strategyLottery;
 
     @Override
-    public RaffleAwardEntity filter(RuleFilterEntity ruleFilterEntity) {
+    public RuleFilterChainFactory.RuleFilterChainAwardEntity filter(RuleFilterEntity ruleFilterEntity) {
         log.info("开始执行默认抽奖");
         Integer awardId = strategyLottery.doLottery(ruleFilterEntity.getStrategyId());
 
-        return RaffleAwardEntity.builder()
+        return RuleFilterChainFactory.RuleFilterChainAwardEntity.builder()
+                .ruleModel(RuleModel.DEFAULT)
                 .awardId(awardId)
                 .build();
     }

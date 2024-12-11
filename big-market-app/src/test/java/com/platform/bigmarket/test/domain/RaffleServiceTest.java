@@ -5,8 +5,6 @@ import com.platform.bigmarket.domain.strategy.model.entity.RaffleAwardEntity;
 import com.platform.bigmarket.domain.strategy.model.entity.RaffleParamsEntity;
 import com.platform.bigmarket.domain.strategy.service.chain.RuleWeightRuleFilterChain;
 import com.platform.bigmarket.domain.strategy.service.raffle.IRaffleService;
-import com.platform.bigmarket.domain.strategy.service.rule.LockRuleFilterService;
-import com.platform.bigmarket.domain.strategy.service.rule.WeightRuleFilterService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,18 +22,10 @@ public class RaffleServiceTest {
     private IRaffleService raffleService;
 
     @Autowired
-    private LockRuleFilterService lockRuleFilterService;
-
-    @Autowired
-    private WeightRuleFilterService weightRuleFilterService;
-
-    @Autowired
     private RuleWeightRuleFilterChain ruleWeightRuleFilterChain;
 
     @Before
     public void setUp() {
-        ReflectionTestUtils.setField(lockRuleFilterService, "userRaffleCount", 0);
-        ReflectionTestUtils.setField(weightRuleFilterService, "USER_SCORE", 0);
         ReflectionTestUtils.setField(ruleWeightRuleFilterChain, "USER_SCORE", 0);
     }
 
@@ -43,7 +33,7 @@ public class RaffleServiceTest {
     public void test_performRaffle() {
         RaffleParamsEntity raffleParamsEntity = new RaffleParamsEntity();
         raffleParamsEntity.setUserId("xiaohong");
-        raffleParamsEntity.setStrategyId(100001L);
+        raffleParamsEntity.setStrategyId(100006L);
 
         RaffleAwardEntity raffleAwardEntity = raffleService.performRaffle(raffleParamsEntity);
         log.info("执行抽奖: {}, 结果: {}", JSON.toJSONString(raffleParamsEntity), JSON.toJSONString(raffleAwardEntity));

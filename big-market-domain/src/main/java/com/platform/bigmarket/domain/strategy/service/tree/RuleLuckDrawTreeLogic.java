@@ -1,6 +1,7 @@
 package com.platform.bigmarket.domain.strategy.service.tree;
 
 import com.platform.bigmarket.domain.strategy.model.common.RuleAction;
+import com.platform.bigmarket.domain.strategy.service.tree.factory.DefaultTreeLogicFactory;
 import org.springframework.stereotype.Component;
 
 @Component("rule_luck_award")
@@ -9,7 +10,7 @@ public class RuleLuckDrawTreeLogic implements ITreeLogic {
     public DefaultTreeLogicFactory.TreeRuleActionAward logic(String userId, Long strategyId, Integer awardId) {
         return DefaultTreeLogicFactory.TreeRuleActionAward.builder()
                 .ruleAction(RuleAction.TAKE_OVER)
-                .awardDataEntity(DefaultTreeLogicFactory.AwardDataEntity.builder()
+                .awardDataEntity(DefaultTreeLogicFactory.RuleFilterTreeAwardEntity.builder()
                         .awardId(101)
                         .awardValue("1:100")
                         .build())

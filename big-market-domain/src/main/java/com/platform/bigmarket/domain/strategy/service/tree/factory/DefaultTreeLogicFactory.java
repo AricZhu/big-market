@@ -1,7 +1,10 @@
-package com.platform.bigmarket.domain.strategy.service.tree;
+package com.platform.bigmarket.domain.strategy.service.tree.factory;
 
 import com.platform.bigmarket.domain.strategy.model.common.RuleAction;
-import com.platform.bigmarket.domain.strategy.model.valobj.RuleTree;
+import com.platform.bigmarket.domain.strategy.model.valobj.RuleTreeDTO;
+import com.platform.bigmarket.domain.strategy.service.tree.DefaultDecisionEngine;
+import com.platform.bigmarket.domain.strategy.service.tree.IDecisionEngine;
+import com.platform.bigmarket.domain.strategy.service.tree.ITreeLogic;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,8 +19,8 @@ public class DefaultTreeLogicFactory {
     @Autowired
     private Map<String, ITreeLogic> treeLogicMap;
 
-    public IDecisionEngine openTreeLogicEngine(RuleTree ruleTree) {
-        return new DefaultDecisionEngine(this.treeLogicMap, ruleTree);
+    public IDecisionEngine openTreeLogicEngine(RuleTreeDTO ruleTreeDTO) {
+        return new DefaultDecisionEngine(this.treeLogicMap, ruleTreeDTO);
     }
 
     @Data
@@ -26,14 +29,14 @@ public class DefaultTreeLogicFactory {
     @NoArgsConstructor
     public static class TreeRuleActionAward {
         private RuleAction ruleAction;
-        private AwardDataEntity awardDataEntity;
+        private RuleFilterTreeAwardEntity awardDataEntity;
     }
 
     @Data
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class AwardDataEntity {
+    public static class RuleFilterTreeAwardEntity {
         private Integer awardId;
         private String awardValue;
     }

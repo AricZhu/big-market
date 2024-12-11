@@ -1,13 +1,12 @@
 package com.platform.bigmarket.domain.strategy.service.raffle;
 
 import com.alibaba.fastjson.JSON;
-import com.platform.bigmarket.domain.strategy.model.common.RuleAction;
 import com.platform.bigmarket.domain.strategy.model.common.RuleModel;
 import com.platform.bigmarket.domain.strategy.model.entity.*;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
 import com.platform.bigmarket.domain.strategy.service.IStrategyLottery;
-import com.platform.bigmarket.domain.strategy.service.chain.IRuleFilterChain;
-import com.platform.bigmarket.domain.strategy.service.chain.RuleFilterChainFactory;
+import com.platform.bigmarket.domain.strategy.service.chain.factory.RuleFilterChainFactory;
+import com.platform.bigmarket.domain.strategy.service.tree.factory.DefaultTreeLogicFactory;
 import com.platform.bigmarket.types.common.ExceptionCode;
 import com.platform.bigmarket.types.exception.BizException;
 import lombok.extern.slf4j.Slf4j;
@@ -35,37 +34,27 @@ public abstract class AbstractRaffleService implements IRaffleService {
             throw new BizException(ExceptionCode.ILLEGAL_PARAMS);
         }
 
-        // 1. 查询抽奖规则
-        StrategyEntity strategyEntity = strategyRepository.queryStrategyEntity(raffleParams.getStrategyId());
-
-        RuleFilterEntity ruleFilterEntity = RuleFilterEntity.builder()
-                .userId(raffleParams.getUserId())
-                .strategyId(raffleParams.getStrategyId())
-                .strategyEntity(strategyEntity)
-                .build();
-
-        IRuleFilterChain iRuleFilterChain = ruleFilterChainFactory.openRuleFilterChain(raffleParams.getStrategyId());
-        RaffleAwardEntity raffleAwardEntity = iRuleFilterChain.filter(ruleFilterEntity);
-
-        // 抽奖中-规则过滤
-        RuleRaffleEntity<CenterRaffleActionEntity> centerRuleRaffleEntity = this.doCenterRaffleRuleFilter(RuleFilterEntity.builder()
-                .userId(raffleParams.getUserId())
-                .strategyId(raffleParams.getStrategyId())
-                .awardId(raffleAwardEntity.getAwardId())
-                .strategyEntity(strategyEntity)
-                .build());
-        if (RuleAction.TAKE_OVER.getCode().equals(centerRuleRaffleEntity.getRuleActionCode())) {
+        // 抽奖前-责任链过滤
+        RuleFilterChainFactory.RuleFilterChainAwardEntity ruleFilterChainAwardEntity = this.doLogicChainFilter(raffleParams);
+        // 非默认抽奖时，直接返回
+        if (!RuleModel.DEFAULT.getCode().equals(ruleFilterChainAwardEntity.getRuleModel().getCode())) {
             return RaffleAwardEntity.builder()
-                    .awardId(101)
-                    .awardTitle("未满足抽奖次数，派发兜底奖品")
+                    .awardId(ruleFilterChainAwardEntity.getAwardId())
                     .build();
         }
+        log.info("责任链过滤结果: {}", JSON.toJSONString(ruleFilterChainAwardEntity));
+
+        // 抽奖中-规则树过滤
+        DefaultTreeLogicFactory.RuleFilterTreeAwardEntity ruleFilterTreeAwardEntity = this.doLogicTreeFilter(new RaffleTreeParamsEntity(raffleParams.getUserId(), raffleParams.getStrategyId(), ruleFilterChainAwardEntity.getAwardId()));
+
+        log.info("规则树过滤结果: {}", JSON.toJSONString(ruleFilterTreeAwardEntity));
 
         return RaffleAwardEntity.builder()
-                .awardId(raffleAwardEntity.getAwardId())
+                .awardId(ruleFilterTreeAwardEntity.getAwardId())
+                .awardValue(ruleFilterTreeAwardEntity.getAwardValue())
                 .build();
     }
 
-    protected abstract RuleRaffleEntity<BeforeRaffleActionEntity> doBeforeRaffleRuleFilter(RuleFilterEntity ruleFilterEntity);
-    protected abstract RuleRaffleEntity<CenterRaffleActionEntity> doCenterRaffleRuleFilter(RuleFilterEntity ruleFilterEntity);
+    protected abstract RuleFilterChainFactory.RuleFilterChainAwardEntity doLogicChainFilter(RaffleParamsEntity raffleParams);
+    protected abstract DefaultTreeLogicFactory.RuleFilterTreeAwardEntity doLogicTreeFilter(RaffleTreeParamsEntity raffleTreeParamsEntity);
 }

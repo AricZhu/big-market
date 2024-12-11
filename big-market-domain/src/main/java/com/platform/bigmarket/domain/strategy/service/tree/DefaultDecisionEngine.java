@@ -2,9 +2,10 @@ package com.platform.bigmarket.domain.strategy.service.tree;
 
 import com.alibaba.fastjson.JSON;
 import com.platform.bigmarket.domain.strategy.model.common.NodeLineExpressionType;
-import com.platform.bigmarket.domain.strategy.model.valobj.RuleTree;
-import com.platform.bigmarket.domain.strategy.model.valobj.RuleTreeLine;
-import com.platform.bigmarket.domain.strategy.model.valobj.RuleTreeNode;
+import com.platform.bigmarket.domain.strategy.model.valobj.RuleTreeDTO;
+import com.platform.bigmarket.domain.strategy.model.valobj.RuleTreeLineDTO;
+import com.platform.bigmarket.domain.strategy.model.valobj.RuleTreeNodeDTO;
+import com.platform.bigmarket.domain.strategy.service.tree.factory.DefaultTreeLogicFactory;
 import com.platform.bigmarket.types.common.ExceptionCode;
 import com.platform.bigmarket.types.exception.BizException;
 import lombok.extern.slf4j.Slf4j;
@@ -15,21 +16,21 @@ import java.util.Map;
 @Slf4j
 public class DefaultDecisionEngine implements IDecisionEngine {
     private Map<String, ITreeLogic> treeLogicMap;
-    private RuleTree ruleTree;
+    private RuleTreeDTO ruleTreeDTO;
 
-    public DefaultDecisionEngine(Map<String, ITreeLogic> treeLogicMap, RuleTree ruleTree) {
+    public DefaultDecisionEngine(Map<String, ITreeLogic> treeLogicMap, RuleTreeDTO ruleTreeDTO) {
         this.treeLogicMap = treeLogicMap;
-        this.ruleTree = ruleTree;
+        this.ruleTreeDTO = ruleTreeDTO;
     }
 
 
     @Override
-    public DefaultTreeLogicFactory.AwardDataEntity process(String userId, Long strategyId, Integer awardId) {
-        Map<String, RuleTreeNode> treeNodeMap = ruleTree.getTreeNodeMap();
-        String rootNode = ruleTree.getRootNode();
-        DefaultTreeLogicFactory.AwardDataEntity awardDataEntity = null;
+    public DefaultTreeLogicFactory.RuleFilterTreeAwardEntity process(String userId, Long strategyId, Integer awardId) {
+        Map<String, RuleTreeNodeDTO> treeNodeMap = ruleTreeDTO.getTreeNodeMap();
+        String rootNode = ruleTreeDTO.getRootNode();
+        DefaultTreeLogicFactory.RuleFilterTreeAwardEntity awardDataEntity = null;
 
-        RuleTreeNode nextNode = treeNodeMap.get(rootNode);
+        RuleTreeNodeDTO nextNode = treeNodeMap.get(rootNode);
         while (null != nextNode) {
             ITreeLogic treeLogic = treeLogicMap.get(nextNode.getRuleKey());
             if (null == treeLogic) {
@@ -38,28 +39,28 @@ public class DefaultDecisionEngine implements IDecisionEngine {
             DefaultTreeLogicFactory.TreeRuleActionAward logic = treeLogic.logic(userId, strategyId, awardId);
             awardDataEntity = logic.getAwardDataEntity();
             log.info("运行规则过滤: {}， 结果: {}", nextNode.getRuleKey(), JSON.toJSONString(awardDataEntity));
-            nextNode = nextTreeNode(logic.getRuleAction().getCode(), nextNode.getRuleTreeLineList());
+            nextNode = nextTreeNode(logic.getRuleAction().getCode(), nextNode.getRuleTreeLineDTOList());
         }
 
         return awardDataEntity;
     }
 
-    private RuleTreeNode nextTreeNode(String targetValue, List<RuleTreeLine> ruleTreeLineList) {
-        if (null == ruleTreeLineList || ruleTreeLineList.isEmpty()) {
+    private RuleTreeNodeDTO nextTreeNode(String targetValue, List<RuleTreeLineDTO> ruleTreeLineDTOList) {
+        if (null == ruleTreeLineDTOList || ruleTreeLineDTOList.isEmpty()) {
             return null;
         }
 
-        for (RuleTreeLine ruleTreeLine : ruleTreeLineList) {
-            if (doLineExpression(targetValue, ruleTreeLine)) {
-                return ruleTree.getTreeNodeMap().get(ruleTreeLine.getNodeTo());
+        for (RuleTreeLineDTO ruleTreeLineDTO : ruleTreeLineDTOList) {
+            if (doLineExpression(targetValue, ruleTreeLineDTO)) {
+                return ruleTreeDTO.getTreeNodeMap().get(ruleTreeLineDTO.getNodeTo());
             }
         }
         return null;
     }
 
-    private boolean doLineExpression(String targetValue, RuleTreeLine ruleTreeLine) {
-        if (ruleTreeLine.getLineExpressionType().getCode().equals(NodeLineExpressionType.EQUAL.getCode())) {
-            return targetValue.equals(ruleTreeLine.getLineExpressionValue().getCode());
+    private boolean doLineExpression(String targetValue, RuleTreeLineDTO ruleTreeLineDTO) {
+        if (ruleTreeLineDTO.getLineExpressionType().equals(NodeLineExpressionType.EQUAL.getCode())) {
+            return targetValue.equals(ruleTreeLineDTO.getLineExpressionValue());
         }
 
         return false;

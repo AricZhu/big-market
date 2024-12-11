@@ -6,8 +6,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum RuleAction {
-    ALLOW("allow", "放行"),
-    TAKE_OVER("take_over", "接管")
+    ALLOW("ALLOW", "放行"),
+    TAKE_OVER("TAKE_OVER", "接管")
     ;
     private String code;
     private String desc;

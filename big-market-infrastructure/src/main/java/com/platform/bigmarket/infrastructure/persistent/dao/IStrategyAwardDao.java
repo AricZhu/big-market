@@ -10,4 +10,6 @@ public interface IStrategyAwardDao {
     List<StrategyAward> queryStrategyAwardList();
 
     List<StrategyAward> queryStrategyAwardListById(Long strategyId);
+
+    StrategyAward queryStrategyAwardById(Long strategyId, Integer awardId);
 }

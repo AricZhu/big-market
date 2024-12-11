@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.platform.bigmarket.domain.strategy.model.common.RuleModel;
 import com.platform.bigmarket.domain.strategy.model.entity.*;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
+import com.platform.bigmarket.domain.strategy.service.chain.factory.RuleFilterChainFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -20,7 +21,7 @@ public class BlackListRuleFilterChain extends AbstractRuleFilterChain {
     private IStrategyRepository strategyRepository;
 
     @Override
-    public RaffleAwardEntity filter(RuleFilterEntity ruleFilterEntity) {
+    public RuleFilterChainFactory.RuleFilterChainAwardEntity filter(RuleFilterEntity ruleFilterEntity) {
         log.info("开始黑名单责任链过滤: {}", JSON.toJSONString(ruleFilterEntity));
         StrategyRuleEntity strategyRuleEntity = strategyRepository.queryStrategyRuleEntity(ruleFilterEntity.getStrategyId(), RuleModel.BLACK_LIST.getCode(), null);
         String ruleValue = strategyRuleEntity.getRuleValue();
@@ -30,7 +31,8 @@ public class BlackListRuleFilterChain extends AbstractRuleFilterChain {
         // 黑名单用户
         if (Arrays.stream(blackUserList).anyMatch(item -> item.equals(ruleFilterEntity.getUserId()))) {
             log.info("黑名单责任链命中");
-            return RaffleAwardEntity.builder()
+            return RuleFilterChainFactory.RuleFilterChainAwardEntity.builder()
+                    .ruleModel(RuleModel.BLACK_LIST)
                     .awardId(Integer.valueOf(ruleValueArr[0]))
                     .build();
         }

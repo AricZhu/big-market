@@ -11,8 +11,6 @@ import lombok.Data;
 public class RaffleAwardEntity {
     /** 抽奖奖品ID - 内部流转使用 */
     private Integer awardId;
-    /** 抽奖奖品标题 */
-    private String awardTitle;
-    /** 抽奖奖品副标题 */
-    private String awardSubtitle;
+    /** 抽奖值 */
+    private String awardValue;
 }

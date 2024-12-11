@@ -1,13 +1,16 @@
-package com.platform.bigmarket.domain.strategy.service.chain;
+package com.platform.bigmarket.domain.strategy.service.chain.factory;
 
 import com.platform.bigmarket.domain.strategy.model.common.RuleModel;
 import com.platform.bigmarket.domain.strategy.model.entity.StrategyEntity;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
+import com.platform.bigmarket.domain.strategy.service.chain.IRuleFilterChain;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -58,5 +61,13 @@ public class RuleFilterChainFactory {
 
         ruleFilterChainCache.put(strategyId, firstRuleFilterChain);
         return firstRuleFilterChain;
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    public static class RuleFilterChainAwardEntity {
+        private RuleModel ruleModel;
+        private Integer awardId;
     }
 }

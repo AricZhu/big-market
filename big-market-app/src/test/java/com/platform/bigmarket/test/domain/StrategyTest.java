@@ -17,7 +17,7 @@ import java.util.Map;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class StrategyTest {
-    private static final Long strategyId = 100001L;
+    private static final Long strategyId = 100006L;
 
     @Autowired
     private IRedisService redisService;
