@@ -4,6 +4,7 @@ import com.platform.bigmarket.domain.strategy.model.entity.StrategyAwardEntity;
 import com.platform.bigmarket.domain.strategy.model.entity.StrategyEntity;
 import com.platform.bigmarket.domain.strategy.model.entity.StrategyRuleEntity;
 import com.platform.bigmarket.domain.strategy.model.valobj.RuleTreeDTO;
+import com.platform.bigmarket.domain.strategy.model.valobj.StockUpdateTaskDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -26,4 +27,16 @@ public interface IStrategyRepository {
     StrategyRuleEntity queryStrategyRuleEntity(Long strategyId, String ruleModel, Integer awardId);
 
     RuleTreeDTO getRuleTree(String treeId);
+
+    void cacheStrategyAward(String key, Integer value);
+
+    Boolean subtractionAwardStock(String key);
+
+    Long getAwardStock(String key);
+
+    void addStockUpdateTask(String key, StockUpdateTaskDTO stockUpdateTaskDTO);
+
+    StockUpdateTaskDTO getStockUpdateTask(String key);
+
+    void updateAwardStock(StockUpdateTaskDTO stockUpdateTaskDTO);
 }

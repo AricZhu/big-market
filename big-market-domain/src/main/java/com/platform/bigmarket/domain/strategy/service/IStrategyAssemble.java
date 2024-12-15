@@ -8,4 +8,6 @@ public interface IStrategyAssemble {
     boolean assembleStrategy(Long strategyId);
 
     void assembleStrategy(String key, List<StrategyAwardEntity> strategyAwardEntityList);
+
+    Boolean subtractionAwardStock(Long strategyId, Integer awardId);
 }

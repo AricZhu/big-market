@@ -3,10 +3,12 @@ package com.platform.bigmarket.domain.strategy.service.raffle;
 import com.alibaba.fastjson.JSON;
 import com.platform.bigmarket.domain.strategy.model.common.RuleModel;
 import com.platform.bigmarket.domain.strategy.model.entity.*;
+import com.platform.bigmarket.domain.strategy.model.valobj.StockUpdateTaskDTO;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
 import com.platform.bigmarket.domain.strategy.service.IStrategyLottery;
 import com.platform.bigmarket.domain.strategy.service.chain.factory.RuleFilterChainFactory;
 import com.platform.bigmarket.domain.strategy.service.tree.factory.DefaultTreeLogicFactory;
+import com.platform.bigmarket.types.common.Constants;
 import com.platform.bigmarket.types.common.ExceptionCode;
 import com.platform.bigmarket.types.exception.BizException;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 抽奖抽象类，定义抽奖的流程
  */
 @Slf4j
-public abstract class AbstractRaffleService implements IRaffleService {
+public abstract class AbstractRaffleService implements IRaffleService, IAwardStockService {
     @Autowired
     private IStrategyRepository strategyRepository;
 
@@ -57,4 +59,15 @@ public abstract class AbstractRaffleService implements IRaffleService {
 
     protected abstract RuleFilterChainFactory.RuleFilterChainAwardEntity doLogicChainFilter(RaffleParamsEntity raffleParams);
     protected abstract DefaultTreeLogicFactory.RuleFilterTreeAwardEntity doLogicTreeFilter(RaffleTreeParamsEntity raffleTreeParamsEntity);
+
+    @Override
+    public StockUpdateTaskDTO getStockUpdateTask() {
+        String key = Constants.STOCK_UPDATE_TASK_PREFIX;
+        return strategyRepository.getStockUpdateTask(key);
+    }
+
+    @Override
+    public void updateAwardStock(StockUpdateTaskDTO stockUpdateTaskDTO) {
+        strategyRepository.updateAwardStock(stockUpdateTaskDTO);
+    }
 }

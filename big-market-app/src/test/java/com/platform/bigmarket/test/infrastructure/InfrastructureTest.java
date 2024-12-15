@@ -1,7 +1,6 @@
 package com.platform.bigmarket.test.infrastructure;
 
 import com.alibaba.fastjson.JSON;
-import com.platform.bigmarket.config.RedisProperties;
 import com.platform.bigmarket.infrastructure.persistent.dao.IAwardDao;
 import com.platform.bigmarket.infrastructure.persistent.dao.IStrategyAwardDao;
 import com.platform.bigmarket.infrastructure.persistent.dao.IStrategyDao;
@@ -39,9 +38,6 @@ public class InfrastructureTest {
     @Autowired
     private IRedisService redisService;
 
-    @Autowired
-    private RedisProperties redisProperties;
-
     @Test
     public void test_queryAwardList() {
         List<Award> awards = awardDao.queryAwardList();
@@ -69,11 +65,9 @@ public class InfrastructureTest {
 
     @Test
     public void test_redisService() {
-//        redisService.setValue("name", "hello");
+        redisService.setValue("name", "hello", 10000);
 
-        String name = (String) redisService.getValue("name");
+        String name = redisService.<String>getValue("name");
         log.info("get name from redis: {}", name);
-
-        log.info("redis properties: {}", JSON.toJSONString(redisProperties));
     }
 }

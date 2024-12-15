@@ -36,7 +36,7 @@ public class DefaultDecisionEngine implements IDecisionEngine {
             if (null == treeLogic) {
                 throw new BizException(ExceptionCode.ERROR_TREE_RULE_KEY.getCode(), "节点规则 key 配置错误: " + nextNode.getRuleKey());
             }
-            DefaultTreeLogicFactory.TreeRuleActionAward logic = treeLogic.logic(userId, strategyId, awardId);
+            DefaultTreeLogicFactory.TreeRuleActionAward logic = treeLogic.logic(userId, strategyId, awardId, nextNode.getRuleValue());
             awardDataEntity = logic.getAwardDataEntity();
             log.info("运行规则过滤: {}， 结果: {}", nextNode.getRuleKey(), JSON.toJSONString(awardDataEntity));
             nextNode = nextTreeNode(logic.getRuleAction().getCode(), nextNode.getRuleTreeLineDTOList());

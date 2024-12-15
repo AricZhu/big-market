@@ -6,12 +6,14 @@ import com.platform.bigmarket.domain.strategy.model.entity.StrategyRuleEntity;
 import com.platform.bigmarket.domain.strategy.model.valobj.RuleTreeDTO;
 import com.platform.bigmarket.domain.strategy.model.valobj.RuleTreeLineDTO;
 import com.platform.bigmarket.domain.strategy.model.valobj.RuleTreeNodeDTO;
+import com.platform.bigmarket.domain.strategy.model.valobj.StockUpdateTaskDTO;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
 import com.platform.bigmarket.infrastructure.persistent.dao.*;
 import com.platform.bigmarket.infrastructure.persistent.po.*;
 import com.platform.bigmarket.infrastructure.persistent.redis.IRedisService;
 import com.platform.bigmarket.types.common.ExceptionCode;
 import com.platform.bigmarket.types.exception.BizException;
+import org.redisson.api.RBlockingQueue;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -188,5 +190,53 @@ public class StrategyRepository implements IStrategyRepository {
 
         ruleTreeDTO.setTreeNodeMap(ruleTreeNodeMap);
         return ruleTreeDTO;
+    }
+
+    @Override
+    public void cacheStrategyAward(String key, Integer value) {
+        redisService.setAtomicLong(key, value);
+    }
+
+    /**
+     * 库存扣减，原子操作
+     * @param key
+     * @return
+     */
+    @Override
+    public Boolean subtractionAwardStock(String key) {
+        // 原子扣减
+        long decr = redisService.decr(key);
+
+        // 库存扣减失败
+        if (decr < 0) {
+            redisService.setAtomicLong(key, 0);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public Long getAwardStock(String key) {
+        return redisService.getAtomicLong(key);
+    }
+
+    @Override
+    public void addStockUpdateTask(String key, StockUpdateTaskDTO stockUpdateTaskDTO) {
+        RBlockingQueue<StockUpdateTaskDTO> blockingQueue = redisService.<StockUpdateTaskDTO>getBlockingQueue(key);
+        blockingQueue.offer(stockUpdateTaskDTO);
+    }
+
+    @Override
+    public StockUpdateTaskDTO getStockUpdateTask(String key) {
+        RBlockingQueue<StockUpdateTaskDTO> blockingQueue = redisService.<StockUpdateTaskDTO>getBlockingQueue(key);
+
+        return blockingQueue.poll();
+    }
+
+    @Override
+    public void updateAwardStock(StockUpdateTaskDTO stockUpdateTaskDTO) {
+        strategyAwardDao.updateStrategyAwardStock(stockUpdateTaskDTO.getStrategyId(), stockUpdateTaskDTO.getAwardId());
     }
 }

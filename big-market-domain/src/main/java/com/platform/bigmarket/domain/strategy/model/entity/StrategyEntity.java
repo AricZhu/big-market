@@ -1,6 +1,7 @@
 package com.platform.bigmarket.domain.strategy.model.entity;
 
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 @Data
 public class StrategyEntity {
@@ -12,6 +13,9 @@ public class StrategyEntity {
     private String ruleModels;
 
     public String[] getRuleModelArray() {
+        if (StringUtils.isBlank(this.ruleModels)) {
+            return new String[0];
+        }
         return ruleModels.split(",");
     }
 

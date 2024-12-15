@@ -14,6 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.concurrent.CountDownLatch;
+
 @SpringBootTest
 @Slf4j
 @RunWith(SpringRunner.class)
@@ -30,13 +32,16 @@ public class RaffleServiceTest {
     }
 
     @Test
-    public void test_performRaffle() {
+    public void test_performRaffle() throws InterruptedException {
         RaffleParamsEntity raffleParamsEntity = new RaffleParamsEntity();
         raffleParamsEntity.setUserId("xiaohong");
         raffleParamsEntity.setStrategyId(100006L);
 
         RaffleAwardEntity raffleAwardEntity = raffleService.performRaffle(raffleParamsEntity);
         log.info("执行抽奖: {}, 结果: {}", JSON.toJSONString(raffleParamsEntity), JSON.toJSONString(raffleAwardEntity));
+
+        // 无限等待
+        new CountDownLatch(1).await();
     }
 
     @Test

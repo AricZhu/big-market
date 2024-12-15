@@ -10,8 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 @RunWith(SpringRunner.class)
@@ -75,11 +75,39 @@ public class StrategyTest {
         HashMap<Integer, Integer> map = new HashMap<>();
         map.put(1, 10);
         map.put(2, 20);
+    }
 
-        redisService.setHashMap("map2", map);
-        Map<Integer, Integer> value = (Map<Integer, Integer>)redisService.getHashMap("map2");
-        log.info("get value: {}", value);
-        Integer i = value.get(1);
-        log.info("get 1: {}", i);
+    /**
+     * 测试并发下的库存扣减
+     */
+    @Test
+    public void test_stockDecr() throws InterruptedException {
+        redisService.setAtomicLong("stock", 100);
+        // 保存结果
+        List<Integer> list = Collections.synchronizedList(new ArrayList<>());
+
+        CountDownLatch countDownLatch = new CountDownLatch(2000);
+
+        for (int i = 0; i < 2000; i++) {
+            new Thread(() -> {
+                // 通过定时来大概对齐所有现成，模拟并发行为
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                // 使用 redission 提供的原子操作解决并发问题
+                long ret = redisService.decr("stock");
+                // 扣减成功
+                if (ret >= 0) {
+                    list.add(1);
+                }
+                countDownLatch.countDown();
+            }).start();
+        }
+
+        countDownLatch.await();
+        log.info("共有 {} 个线程扣减成功", list.size());
     }
 }

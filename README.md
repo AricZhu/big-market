@@ -93,3 +93,132 @@ return mapTable[random];
 我们先定义抽象类，实现这两个过滤规则的调用，确定了抽奖的基本流程，然后再定义一个子类，在子类中具体实现责任链过滤和规则树过滤
 
 **注意**：本章节中的规则树的构建是从数据库中创建
+
+## 不超卖解决库存扣减
+抽奖完成后，就可以进行奖品的扣减。首先库存的扣减肯定不能直接在数据库中进行扣减，在高并发场景下，直接进行数据库扣减会导致数据库资源被耗尽，从而导致崩溃。所以在高并发场景下，一般都是需要通过 redis 先缓存商品数量，然后在 redis 中直接进行扣减，并且在扣减成功后，在异步队列中添加扣减任务，再由定时任务去完成真正的数据库扣减
+
+![img.png](docs/images/stock-reduce.png)
+
+**超卖问题**
+缓存扣减需要是原子操作，否则在高并发场景下，会出现超卖情况。一种方式是加锁解决，但性能比较低，另一种方式是使用 redission 提供的原子操作来实现，具体看如下代码：
+
+```java
+// RedisService
+public class RedisService {
+  // 有并发问题的扣减
+  public boolean decrBug(String key) {
+    long l = redissonClient.getAtomicLong(key).get();
+    if (l <= 0) {
+      return false;
+    }
+    redissonClient.getAtomicLong(key).set(l - 1);
+    return true;
+  }
+
+  // redission 提供的原子操作的扣减
+  public long decr(String key) {
+    return redissonClient.getAtomicLong(key).decrementAndGet();
+  }
+}
+
+// Test
+public class StrategyTest {
+    // 如下代码中，并发调用 decrBug 进行扣减时，有并发问题，最终会有超过 100 个线程进行扣减
+  public void test_stockDecr1() throws InterruptedException {
+    redisService.setAtomicLong("stock", 100);
+    // 保存结果
+    List<Integer> list = Collections.synchronizedList(new ArrayList<>());
+
+    CountDownLatch countDownLatch = new CountDownLatch(2000);
+
+    for (int i = 0; i < 2000; i++) {
+      new Thread(() -> {
+        // 通过定时来大概对齐所有现成，模拟并发行为
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+        // 执行扣减 - 这里应该会有并发问题
+        boolean ret = redisService.decrBug("stock");
+        // 扣减成功
+        if (ret >= 0) {
+          list.add(1);
+        }
+        countDownLatch.countDown();
+      }).start();
+    }
+
+    countDownLatch.await();
+    log.info("共有 {} 个线程扣减成功", list.size());
+  }
+
+  // 可以通过加锁来解决上述的并发问题，但缺点是性能比较低
+  public void test_stockDecr2() throws InterruptedException {
+    redisService.setAtomicLong("stock", 100);
+    // 保存结果
+    List<Integer> list = Collections.synchronizedList(new ArrayList<>());
+
+    CountDownLatch countDownLatch = new CountDownLatch(2000);
+
+    for (int i = 0; i < 2000; i++) {
+      new Thread(() -> {
+        // 通过定时来大概对齐所有现成，模拟并发行为
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+
+        boolean ret;
+        // 加锁解决这里的并发问题
+        synchronized (this) {
+          ret = redisService.decrBug("stock");
+        }
+        // 扣减成功
+        if (ret) {
+          list.add(1);
+        }
+        countDownLatch.countDown();
+      }).start();
+    }
+
+    countDownLatch.await();
+    log.info("共有 {} 个线程扣减成功", list.size());
+  }
+
+  // redission 提供了原子操作，可以不加锁也能解决并发问题，如下
+  public void test_stockDecr3() throws InterruptedException {
+    redisService.setAtomicLong("stock", 100);
+    // 保存结果
+    List<Integer> list = Collections.synchronizedList(new ArrayList<>());
+
+    CountDownLatch countDownLatch = new CountDownLatch(2000);
+
+    for (int i = 0; i < 2000; i++) {
+      new Thread(() -> {
+        // 通过定时来大概对齐所有现成，模拟并发行为
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+
+        // 使用 redission 提供的原子操作解决并发问题
+        long ret = redisService.decr("stock");
+        // 扣减成功
+        if (ret >= 0) {
+          list.add(1);
+        }
+        countDownLatch.countDown();
+      }).start();
+    }
+
+    countDownLatch.await();
+    log.info("共有 {} 个线程扣减成功", list.size());
+  }
+
+}
+
+```
+

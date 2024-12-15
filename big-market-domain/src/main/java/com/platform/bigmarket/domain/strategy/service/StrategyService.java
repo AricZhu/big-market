@@ -3,6 +3,7 @@ package com.platform.bigmarket.domain.strategy.service;
 import com.platform.bigmarket.domain.strategy.model.entity.StrategyAwardEntity;
 import com.platform.bigmarket.domain.strategy.model.entity.StrategyRuleEntity;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
+import com.platform.bigmarket.types.common.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,11 @@ public class StrategyService implements IStrategyAssemble, IStrategyLottery {
         // 全概率装配
         List<StrategyAwardEntity> strategyAwardList = strategyRepository.queryStrategyAwardEntityList(strategyId);
         assembleStrategy(strategyId.toString(), strategyAwardList);
+
+        // 库存存放到缓存中
+        for (StrategyAwardEntity strategyAwardEntity : strategyAwardList) {
+            cacheAwardCount(strategyId, strategyAwardEntity.getAwardId(), strategyAwardEntity.getAwardCount());
+        }
 
         // 权重装配
         StrategyRuleEntity strategyRuleEntity = strategyRepository.queryStrategyRuleEntity(strategyId, "rule_weight", null);
@@ -81,6 +87,22 @@ public class StrategyService implements IStrategyAssemble, IStrategyLottery {
         strategyRepository.setStrategyAwardRateTable(rateTablePrefix + key, rateTable);
     }
 
+    /**
+     * 库存扣减
+     * @param strategyId
+     * @param awardId
+     * @return
+     */
+    @Override
+    public Boolean subtractionAwardStock(Long strategyId, Integer awardId) {
+        String key = Constants.CACHE_STRATEGY_AWARD_PREFIX + strategyId + Constants.CONNECT_KEY + awardId;
+        Long awardStock = strategyRepository.getAwardStock(key);
+        if (awardStock <= 0) {
+            return false;
+        }
+        return strategyRepository.subtractionAwardStock(key);
+    }
+
     @Override
     public Integer doLottery(Long strategyId) {
         int stragetyAwardRange = strategyRepository.getStragetyAwardRange(rateRangePrefix + strategyId);
@@ -99,5 +121,10 @@ public class StrategyService implements IStrategyAssemble, IStrategyLottery {
         Random random = new Random();
         int randomIndex = random.nextInt(stragetyAwardRange);
         return stragetyAwardRateTable.get(String.valueOf(randomIndex));
+    }
+
+    private void cacheAwardCount(Long strategyId, Integer awardId, Integer awardCount) {
+        String key = Constants.CACHE_STRATEGY_AWARD_PREFIX + strategyId + Constants.CONNECT_KEY + awardId;
+        strategyRepository.cacheStrategyAward(key, awardCount);
     }
 }
