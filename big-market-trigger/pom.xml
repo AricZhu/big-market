@@ -24,5 +24,9 @@
             <groupId>com.platform</groupId>
             <artifactId>big-market-domain</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.platform</groupId>
+            <artifactId>big-market-api</artifactId>
+        </dependency>
     </dependencies>
 </project>

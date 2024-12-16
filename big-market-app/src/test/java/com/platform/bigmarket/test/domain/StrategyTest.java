@@ -1,7 +1,7 @@
 package com.platform.bigmarket.test.domain;
 
-import com.platform.bigmarket.domain.strategy.service.IStrategyAssemble;
-import com.platform.bigmarket.domain.strategy.service.IStrategyLottery;
+import com.platform.bigmarket.domain.strategy.service.strategy.IStrategyAssemble;
+import com.platform.bigmarket.domain.strategy.service.strategy.IStrategyLottery;
 import com.platform.bigmarket.infrastructure.persistent.redis.IRedisService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;

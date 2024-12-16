@@ -3,14 +3,12 @@ package com.platform.bigmarket.domain.strategy.service.tree;
 import com.platform.bigmarket.domain.strategy.model.common.RuleAction;
 import com.platform.bigmarket.domain.strategy.model.valobj.StockUpdateTaskDTO;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
-import com.platform.bigmarket.domain.strategy.service.IStrategyAssemble;
+import com.platform.bigmarket.domain.strategy.service.strategy.IStrategyAssemble;
 import com.platform.bigmarket.domain.strategy.service.tree.factory.DefaultTreeLogicFactory;
 import com.platform.bigmarket.types.common.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import static com.platform.bigmarket.types.common.Constants.STOCK_UPDATE_TASK_PREFIX;
 
 @Slf4j
 @Component("rule_stock")

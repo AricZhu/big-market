@@ -1,4 +1,4 @@
-package com.platform.bigmarket.domain.strategy.service;
+package com.platform.bigmarket.domain.strategy.service.strategy;
 
 public interface IStrategyLottery {
     Integer doLottery(Long strategyId);

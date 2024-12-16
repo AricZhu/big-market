@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.platform.bigmarket.domain.strategy.model.common.RuleModel;
 import com.platform.bigmarket.domain.strategy.model.entity.*;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
-import com.platform.bigmarket.domain.strategy.service.IStrategyLottery;
+import com.platform.bigmarket.domain.strategy.service.strategy.IStrategyLottery;
 import com.platform.bigmarket.domain.strategy.service.chain.factory.RuleFilterChainFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -3,12 +3,10 @@ package com.platform.bigmarket.domain.strategy.service.raffle;
 import com.alibaba.fastjson.JSON;
 import com.platform.bigmarket.domain.strategy.model.common.RuleModel;
 import com.platform.bigmarket.domain.strategy.model.entity.*;
-import com.platform.bigmarket.domain.strategy.model.valobj.StockUpdateTaskDTO;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
-import com.platform.bigmarket.domain.strategy.service.IStrategyLottery;
+import com.platform.bigmarket.domain.strategy.service.strategy.IStrategyLottery;
 import com.platform.bigmarket.domain.strategy.service.chain.factory.RuleFilterChainFactory;
 import com.platform.bigmarket.domain.strategy.service.tree.factory.DefaultTreeLogicFactory;
-import com.platform.bigmarket.types.common.Constants;
 import com.platform.bigmarket.types.common.ExceptionCode;
 import com.platform.bigmarket.types.exception.BizException;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 抽奖抽象类，定义抽奖的流程
  */
 @Slf4j
-public abstract class AbstractRaffleService implements IRaffleService, IAwardStockService {
+public abstract class AbstractRaffleService implements IRaffleService {
     @Autowired
     private IStrategyRepository strategyRepository;
 
@@ -40,9 +38,9 @@ public abstract class AbstractRaffleService implements IRaffleService, IAwardSto
         RuleFilterChainFactory.RuleFilterChainAwardEntity ruleFilterChainAwardEntity = this.doLogicChainFilter(raffleParams);
         // 非默认抽奖时，直接返回
         if (!RuleModel.DEFAULT.getCode().equals(ruleFilterChainAwardEntity.getRuleModel().getCode())) {
-            return RaffleAwardEntity.builder()
+            return buildRaffleAwardEntity(raffleParams.getStrategyId(), RaffleAwardEntity.builder()
                     .awardId(ruleFilterChainAwardEntity.getAwardId())
-                    .build();
+                    .build());
         }
         log.info("责任链过滤结果: {}", JSON.toJSONString(ruleFilterChainAwardEntity));
 
@@ -51,23 +49,22 @@ public abstract class AbstractRaffleService implements IRaffleService, IAwardSto
 
         log.info("规则树过滤结果: {}", JSON.toJSONString(ruleFilterTreeAwardEntity));
 
-        return RaffleAwardEntity.builder()
+        return buildRaffleAwardEntity(raffleParams.getStrategyId(), RaffleAwardEntity.builder()
                 .awardId(ruleFilterTreeAwardEntity.getAwardId())
                 .awardValue(ruleFilterTreeAwardEntity.getAwardValue())
-                .build();
+                .build());
     }
 
     protected abstract RuleFilterChainFactory.RuleFilterChainAwardEntity doLogicChainFilter(RaffleParamsEntity raffleParams);
     protected abstract DefaultTreeLogicFactory.RuleFilterTreeAwardEntity doLogicTreeFilter(RaffleTreeParamsEntity raffleTreeParamsEntity);
 
-    @Override
-    public StockUpdateTaskDTO getStockUpdateTask() {
-        String key = Constants.STOCK_UPDATE_TASK_PREFIX;
-        return strategyRepository.getStockUpdateTask(key);
-    }
+    private RaffleAwardEntity buildRaffleAwardEntity(Long strategyId, RaffleAwardEntity raffleAwardEntity) {
+        StrategyAwardEntity strategyAwardEntity = strategyRepository.queryStrategyAwardEntity(strategyId, raffleAwardEntity.getAwardId());
 
-    @Override
-    public void updateAwardStock(StockUpdateTaskDTO stockUpdateTaskDTO) {
-        strategyRepository.updateAwardStock(stockUpdateTaskDTO);
+        return RaffleAwardEntity.builder()
+                .awardId(raffleAwardEntity.getAwardId())
+                .awardValue(raffleAwardEntity.getAwardValue())
+                .sort(strategyAwardEntity.getSort())
+                .build();
     }
 }

@@ -222,3 +222,12 @@ public class StrategyTest {
 
 ```
 
+## 抽奖 API 接口实现
+根据 DDD 中的模块分工，在 api 模块中提供对外接口的标准，在 trigger 模块中统一提供 http 接口、定时任务等对外处理，domain 领域模块提供领域的实现，模块的依赖关系如下：
+
+![img.png](docs/images/raffle-api.png)
+
+同时为了代码维护方便，我们在 domain 领域模块中再添加一个奖品接口，提供奖品查询结果
+
+**注意**
+* 奖品列表的数据不会经常变更，因此需要添加到缓存中，提升性能

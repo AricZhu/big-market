@@ -9,4 +9,11 @@
     <artifactId>big-market-api</artifactId>
     <name>Archetype - big-market-api</name>
     <url>http://maven.apache.org</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.platform</groupId>
+            <artifactId>big-market-types</artifactId>
+        </dependency>
+    </dependencies>
 </project>

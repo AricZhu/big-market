@@ -1,9 +1,8 @@
 package com.platform.bigmarket.domain.strategy.service.chain;
 
 import com.platform.bigmarket.domain.strategy.model.common.RuleModel;
-import com.platform.bigmarket.domain.strategy.model.entity.RaffleAwardEntity;
 import com.platform.bigmarket.domain.strategy.model.entity.RuleFilterEntity;
-import com.platform.bigmarket.domain.strategy.service.IStrategyLottery;
+import com.platform.bigmarket.domain.strategy.service.strategy.IStrategyLottery;
 import com.platform.bigmarket.domain.strategy.service.chain.factory.RuleFilterChainFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

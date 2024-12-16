@@ -11,8 +11,10 @@ import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
 import com.platform.bigmarket.infrastructure.persistent.dao.*;
 import com.platform.bigmarket.infrastructure.persistent.po.*;
 import com.platform.bigmarket.infrastructure.persistent.redis.IRedisService;
+import com.platform.bigmarket.types.common.Constants;
 import com.platform.bigmarket.types.common.ExceptionCode;
 import com.platform.bigmarket.types.exception.BizException;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBlockingQueue;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Repository
 public class StrategyRepository implements IStrategyRepository {
     private static final Map<String, Object> CacheData = new HashMap<>();
@@ -238,5 +241,29 @@ public class StrategyRepository implements IStrategyRepository {
     @Override
     public void updateAwardStock(StockUpdateTaskDTO stockUpdateTaskDTO) {
         strategyAwardDao.updateStrategyAwardStock(stockUpdateTaskDTO.getStrategyId(), stockUpdateTaskDTO.getAwardId());
+    }
+
+    @Override
+    public List<StrategyAwardEntity> queryAwardList(Long strategyId) {
+        // 先从缓存获取
+        String cacheKey = Constants.CACHE_AWARD_PREFIX + strategyId;
+        List<StrategyAwardEntity> cacheValue = redisService.<List<StrategyAwardEntity>>getValue(cacheKey);
+        if (cacheValue != null) {
+            log.info("奖品列表命中缓存: {}", strategyId);
+            return cacheValue;
+        }
+
+        List<StrategyAward> strategyAwardList = strategyAwardDao.queryStrategyAwardListById(strategyId);
+
+        ArrayList<StrategyAwardEntity> strategyAwardEntityList = new ArrayList<>();
+
+        for (StrategyAward strategyAward : strategyAwardList) {
+            StrategyAwardEntity strategyAwardEntity = new StrategyAwardEntity();
+            BeanUtils.copyProperties(strategyAward, strategyAwardEntity);
+            strategyAwardEntityList.add(strategyAwardEntity);
+        }
+
+        redisService.setValue(cacheKey, strategyAwardEntityList);
+        return strategyAwardEntityList;
     }
 }

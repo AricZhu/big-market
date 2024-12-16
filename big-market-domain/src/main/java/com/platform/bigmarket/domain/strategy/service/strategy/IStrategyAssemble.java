@@ -1,4 +1,4 @@
-package com.platform.bigmarket.domain.strategy.service;
+package com.platform.bigmarket.domain.strategy.service.strategy;
 
 import com.platform.bigmarket.domain.strategy.model.entity.StrategyAwardEntity;
 

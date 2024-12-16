@@ -39,4 +39,6 @@ public interface IStrategyRepository {
     StockUpdateTaskDTO getStockUpdateTask(String key);
 
     void updateAwardStock(StockUpdateTaskDTO stockUpdateTaskDTO);
+
+    List<StrategyAwardEntity> queryAwardList(Long strategyId);
 }

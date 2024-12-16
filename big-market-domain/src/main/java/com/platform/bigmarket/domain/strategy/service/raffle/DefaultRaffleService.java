@@ -2,16 +2,20 @@ package com.platform.bigmarket.domain.strategy.service.raffle;
 
 import com.platform.bigmarket.domain.strategy.model.entity.*;
 import com.platform.bigmarket.domain.strategy.model.valobj.RuleTreeDTO;
+import com.platform.bigmarket.domain.strategy.model.valobj.StockUpdateTaskDTO;
 import com.platform.bigmarket.domain.strategy.repository.IStrategyRepository;
 import com.platform.bigmarket.domain.strategy.service.chain.IRuleFilterChain;
 import com.platform.bigmarket.domain.strategy.service.chain.factory.RuleFilterChainFactory;
 import com.platform.bigmarket.domain.strategy.service.tree.IDecisionEngine;
 import com.platform.bigmarket.domain.strategy.service.tree.factory.DefaultTreeLogicFactory;
+import com.platform.bigmarket.types.common.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
-public class DefaultRaffleService extends AbstractRaffleService {
+public class DefaultRaffleService extends AbstractRaffleService implements IAwardStockService, IRaffleAwardService {
     @Autowired
     private IStrategyRepository strategyRepository;
 
@@ -60,5 +64,22 @@ public class DefaultRaffleService extends AbstractRaffleService {
 
         IDecisionEngine decisionEngine = treeLogicFactory.openTreeLogicEngine(ruleTreeDTO);
         return decisionEngine.process(userId, strategyId, awardId);
+    }
+
+
+    @Override
+    public StockUpdateTaskDTO getStockUpdateTask() {
+        String key = Constants.STOCK_UPDATE_TASK_PREFIX;
+        return strategyRepository.getStockUpdateTask(key);
+    }
+
+    @Override
+    public void updateAwardStock(StockUpdateTaskDTO stockUpdateTaskDTO) {
+        strategyRepository.updateAwardStock(stockUpdateTaskDTO);
+    }
+
+    @Override
+    public List<StrategyAwardEntity> queryAwardList(Long strategyId) {
+        return strategyRepository.queryAwardList(strategyId);
     }
 }
