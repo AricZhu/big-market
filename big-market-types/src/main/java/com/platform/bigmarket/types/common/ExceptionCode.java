@@ -2,9 +2,11 @@ package com.platform.bigmarket.types.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public enum ExceptionCode {
     ILLEGAL_PARAMS("1001", "参数错误"),
     NULL_POINTER("1002", "返回为空"),

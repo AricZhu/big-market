@@ -2,6 +2,7 @@ package com.platform.bigmarket.infrastructure.persistent.dao;
 
 import com.platform.bigmarket.infrastructure.persistent.po.StrategyAward;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -11,7 +12,7 @@ public interface IStrategyAwardDao {
 
     List<StrategyAward> queryStrategyAwardListById(Long strategyId);
 
-    StrategyAward queryStrategyAwardById(Long strategyId, Integer awardId);
+    StrategyAward queryStrategyAwardById(@Param("strategyId") Long strategyId, @Param("awardId") Integer awardId);
 
-    void updateStrategyAwardStock(Long strategyId, Integer awardId);
+    void updateStrategyAwardStock(@Param("strategyId") Long strategyId, @Param("awardId") Integer awardId);
 }

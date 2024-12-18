@@ -126,7 +126,12 @@ public class StrategyRepository implements IStrategyRepository {
 
     @Override
     public StrategyRuleEntity queryStrategyRuleEntity(Long strategyId, String ruleModel, Integer awardId) {
-        StrategyRule strategyRule = strategyRuleDao.queryStrategyRule(strategyId, ruleModel, awardId);
+        StrategyRule strategyRule = null;
+        try {
+            strategyRule = strategyRuleDao.queryStrategyRule(strategyId, ruleModel, awardId);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
         if (null == strategyRule) {
             return null;
         }

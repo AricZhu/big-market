@@ -39,7 +39,7 @@ public class RaffleController implements IRaffleServiceAPI {
 
     @RequestMapping(value = "strategy_armory", method = RequestMethod.GET)
     @Override
-    public Response<Boolean> strategyAssemble(@RequestParam Long strategyId) {
+    public Response<Boolean> strategyAssemble(@RequestParam("strategyId") Long strategyId) {
         try {
             boolean status = strategyAssemble.assembleStrategy(strategyId);
             if (status) {
